@@ -1,0 +1,1267 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:p="http://primefaces.org/ui"
+	template="/templates/temprincipal.xhtml">
+
+
+
+	<ui:define name="body">
+
+
+
+		<div style="text-align: center;">
+			<h:outputLabel
+				style="font-size: 15px; font-weight: bold; color: rgb(50, 118, 177);">REGISTRO DE DATOS DE EMPLEADOS</h:outputLabel>
+		</div>
+		<hr style="color: #d6d6d6; margin-top: 15px;" />
+
+		<h:form id="frmPrincipal">
+
+			<p:growl id="growl" showDetail="true" sticky="false" life="1500" />
+
+			<p:dialog id="dglCargando" widgetVar="estadoCarga" modal="true"
+				style="opacity: 0.1 !important" draggable="false" closable="false"
+				resizable="false" showHeader="false">
+				<p:graphicImage library="images" value="loading.gif" />
+			</p:dialog>
+
+			<p:outputPanel id="pnlPrincipal">
+
+				<br />
+				<br />
+
+				<h:panelGrid columns="4">
+					<p:commandButton value="Nuevo" icon="fas fa-plus"
+						action="#{usuarioController.limpiar()}" immediate="true"
+						update="popupNuevo" oncomplete="PF('varNuevo').show()" />
+				</h:panelGrid>
+
+				<p:dataTable id="tablaUsuarios" var="_usuario"
+					value="#{usuarioController.listaUsuarios}"
+					sortBy="#{_usuario.idUsuario}"
+					noDataLabel="No se han encontrado registros" rows="30"
+					rowIndexVar="it" rowKey="#{_usuario.idUsuario}"
+					onrowmouseover="this.style.backgroundColor='#FFFFE0'"
+					onrowmouseout="this.style.backgroundColor='#F7FDFC'"
+					style=" align:center; width:100%;background-color:#F7FDFC; "
+					paginator="true" paginatorPosition="bottom"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {Exporters}"
+					rowsPerPageTemplate="5,10,15" reflow="true">
+					<f:facet name="{Exporters}">
+						<div style="float: right; padding-top: 5px;">
+							<h:commandLink title="Exportar">
+								<h:graphicImage value="/resources/images/xlsx.png" />
+								<p:dataExporter type="xls" target="tablaUsuarios"
+									fileName="graduados" />
+							</h:commandLink>
+						</div>
+					</f:facet>
+
+					<p:column style="width:3%">
+						<f:facet name="header">#</f:facet>
+						<h:outputText value="#{it+1}" />
+					</p:column>
+					<p:column filterBy="#{_usuario.identificacion}">
+						<f:facet name="header">No. Identificación</f:facet>
+						<h:outputText value=" #{_usuario.identificacion}" />
+					</p:column>
+					<p:column filterBy="#{_usuario.nombres} ">
+						<f:facet name="header">Nombres</f:facet>
+						<h:outputText value=" #{_usuario.nombres}" />
+					</p:column>
+					<p:column filterBy="#{_usuario.apellidos} ">
+						<f:facet name="header">Apellidos</f:facet>
+						<h:outputText value="#{_usuario.apellidos}" />
+					</p:column>
+					<p:column>
+						<f:facet name="header">Teléfono</f:facet>
+						<h:outputText value="#{_usuario.telefono}" />
+					</p:column>
+					<p:column style="width: 8%;">
+						<f:facet name="header">Estado</f:facet>
+						<h:outputText value="#{_usuario.estado ? 'Activo' : 'Inactivo'}"
+							style="#{_usuario.estado ? 
+            'background-color: #28a745; color: white; padding: 4px; border-radius: 3px; text-align: center; display: block;' : 
+            'background-color: #6c757d; color: white; padding: 4px; border-radius: 3px; text-align: center; display: block;'}" />
+					</p:column>
+
+					<p:column headerText="Acciones" exportable="false"
+						style="width: 15%;text-align: center;">
+						<p:commandButton id="btnEditar" ajax="true"
+							actionListener="#{usuarioController.editar}" icon="pi pi-pencil"
+							title="Editar" process="@this tablaUsuarios"
+							update=":popupEditar" oncomplete="PF('varEditar').show()">
+							<f:attribute name="itemEditar" value="#{_usuario}" />
+						</p:commandButton>
+
+
+					</p:column>
+				</p:dataTable>
+
+
+			</p:outputPanel>
+
+		</h:form>
+
+		<!-- seccion todo nuevo -->
+		<p:dialog widgetVar="varNuevo" modal="true" id="popupNuevo"
+			draggable="true" resizable="false" closable="true" responsive="true"
+			width="95vw" height="auto" minHeight="400" maxHeight="75vh"
+			style="top: 5vh; overflow: hidden;"
+			contentStyle="overflow-y: auto; max-height: 80vh;">
+			<f:facet name="header">
+				        Nuevo Empleado
+			        </f:facet>
+
+			<h:form name="formNuevo" id="formNuevo">
+
+				<p:tabView id="tabViewNuevo">
+
+					<p:tab title="Datos Personales">
+
+						<p:panelGrid columns="6" style="width: 100%;"
+							id="gridDatosPersonales">
+
+							<p:outputLabel for="tipoDocumento" value="Tipo"
+								class="output-blue" />
+							<p:selectOneMenu id="tipoDocumento" autoWidth="false"
+								style="width:100%;" styleClass="minimal-select"
+								requiredMessage="Tipo docuemento requerido" required="true"
+								value="#{usuarioController.usuarioActual.tipoidentificacion}">
+								<f:selectItem itemLabel="SELECCIONE" itemValue=""
+									noSelectionOption="true" />
+								<f:selectItem itemLabel="CEDULA" itemValue="C" />
+								<f:selectItem itemLabel="RUC" itemValue="R" />
+								<f:selectItem itemLabel="PASAPORTE" itemValue="P" />
+							</p:selectOneMenu>
+
+
+
+							<p:outputLabel for="telefono" value="Teléfono"
+								class="output-blue" />
+							<p:inputMask id="telefono" maxlength="10" style="width:100%;"
+								requiredMessage="Campo Requerido" mask="(99) 9999-999"
+								value="#{usuarioController.usuarioActual.telefono}" />
+
+							<p:outputLabel for="estadoCivil" value="Estado Civil"
+								class="output-blue" />
+							<p:selectOneMenu id="estadoCivil" autoWidth="false"
+								style="width:100%;" styleClass="minimal-select"
+								requiredMessage="Estado civil requerido" required="true"
+								value="#{usuarioController.usuarioActual.estadocivil}">
+								<f:selectItem itemLabel="SELECCIONE" itemValue=""
+									noSelectionOption="true" />
+								<f:selectItem itemLabel="SOLTERO/A" itemValue="SOLTERO/A" />
+								<f:selectItem itemLabel="CASADO/A" itemValue="CASADO/A" />
+								<f:selectItem itemLabel="DIVORCIADO/A" itemValue="DIVORCIADO/A" />
+								<f:selectItem itemLabel="VIUDO/A" itemValue="VIUDO/A" />
+								<f:selectItem itemLabel="UNIÓN DE HECHO"
+									itemValue="UNIÓN DE HECHO" />
+							</p:selectOneMenu>
+
+
+							<h:outputLabel for="identificacion" value="Identificacion"
+								class="output-blue" />
+							<p:inputText id="identificacion" required="true"
+								requiredMessage="Identificación requerido"
+								value="#{usuarioController.usuarioActual.identificacion}"
+								style="width:100%;" />
+
+							<p:outputLabel for="mail" value="Email" class="output-blue" />
+							<p:inputText id="mail" style="width:100%;" required="true"
+								requiredMessage="Correo requerido"
+								validatorMessage="Correo electrónico no válido"
+								value="#{usuarioController.usuarioActual.email}">
+								<f:validateRegex for="mailEmp"
+									pattern="[\w\.-]*[a-zA-Z0-9_]@[\w\.-]*[a-zA-Z0-9]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]" />
+
+							</p:inputText>
+
+							<p:outputLabel for="discapacidad" value="Discapacidad ?"
+								class="output-blue" />
+							<p:selectBooleanCheckbox id="discapacidad"
+								value="#{usuarioController.usuarioActual.discapacidad}"
+								trueLabel="Sí" falseLabel="No" />
+
+
+
+							<p:outputLabel for="nombre" value="Nombres" class="output-blue" />
+							<p:inputText id="nombre" required="true"
+								requiredMessage="Nombre requerido"
+								value="#{usuarioController.usuarioActual.nombres}"
+								style="width:100%;" />
+
+							<p:outputLabel for="telEmp" value="Movil" class="output-blue" />
+							<p:inputMask id="telEmp" mask="9999999999" maxlength="10"
+								style="width:100%;"
+								value="#{usuarioController.usuarioActual.movil}" />
+
+							<p:outputLabel for="descripcion" value="Descripción"
+								class="output-blue" />
+							<p:inputTextarea id="descripcion"
+								value="#{usuarioController.usuarioActual.disdescripcion}"
+								autoResize="false" rows="3" cols="30"
+								style="width: 100%;resize: vertical; height: 30px; max-height: 30px; overflow: auto;" />
+
+
+							<p:outputLabel for="apellidos" value="Apellidos"
+								class="output-blue" />
+							<p:inputText id="apellidos" required="true"
+								requiredMessage="Apellido requerido"
+								value="#{usuarioController.usuarioActual.apellidos}"
+								style="width:100%;" />
+
+							<p:outputLabel for="direccion" value="Dirección"
+								class="output-blue" />
+							<p:inputTextarea id="direccion"
+								value="#{usuarioController.usuarioActual.direccion}"
+								required="true" autoResize="false" rows="3" cols="30"
+								style="width: 100%;resize: vertical; height: 30px; max-height: 30px; overflow: auto;"
+								requiredMessage="dirección obligatorio" />
+
+							<p:outputLabel for="porcentaje" value="% Discapacidad"
+								class="output-blue" />
+							<p:inputText id="porcentaje"
+								value="#{usuarioController.usuarioActual.disporcentaje}"
+								style="width:100%;" />
+
+							<p:outputLabel for="fechaNac" value="Fecha Nacimiento:"
+								class="output-blue" />
+							<p:datePicker id="fechaNac" locale="es" monthNavigator="true"
+								pattern="dd/MM/yyyy" style="width:100% !important;"
+								requiredMessage="Fecha de Nacimiento requerido" required="true"
+								yearNavigator="true" readonlyInput="true" yearRange="1975:2030"
+								value="#{usuarioController.usuarioActual.nacimiento}"
+								maxdate="#{graduadoPerfilController.maxDateNac}" />
+						</p:panelGrid>
+
+					</p:tab>
+
+					<p:tab title="Datos de la Cuenta">
+
+						<p:panelGrid columns="2" style="width: 100%;" id="gridCuentas"
+							columnClasses="label,value,label,value">
+
+							<h:panelGrid columns="2" id="gridBanco">
+
+								<p:outputLabel value="Es de planta:" class="output-blue" />
+								<p:selectOneMenu id="pantalla" autoWidth="false"
+									style="width:100%;" styleClass="minimal-select"
+									requiredMessage="Campo Requerido" required="true"
+									value="#{usuarioController.usuarioActual.pantalla}">
+									<f:selectItem itemLabel="SELECCIONE" itemValue=""
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Interna" itemValue="Interna" />
+									<f:selectItem itemLabel="Externa" itemValue="Externa" />
+								</p:selectOneMenu>
+
+								<p:outputLabel value="Departamento" class="output-blue" />
+								<p:selectOneMenu id="departamento" autoWidth="false"
+									style="width:100%;" required="true"
+									requiredMessage="Campo Requerido" styleClass="minimal-select"
+									converter="omnifaces.SelectItemsConverter"
+									value="#{usuarioController.usuarioActual.departamento.idDepartamento}">
+									<f:selectItem itemLabel="SELECCIONE" itemValue=""
+										noSelectionOption="true" />
+									<f:selectItems value="#{usuarioController.listaDepartamento}"
+										var="var" itemLabel="#{var.nombreDepartamento}"
+										itemValue="#{var.idDepartamento}" />
+								</p:selectOneMenu>
+
+								<p:outputLabel value="Banco" class="output-blue" />
+								<p:selectOneMenu id="banco" autoWidth="false"
+									style="width:100%;" requiredMessage="Campo Requerido"
+									styleClass="minimal-select"
+									converter="omnifaces.SelectItemsConverter"
+									value="#{usuarioController.usuarioActual.banco.idBanco}">
+									<f:selectItem itemLabel="SELECCIONE" itemValue=""
+										noSelectionOption="true" />
+									<f:selectItems value="#{usuarioController.listaBanco}"
+										var="var" itemLabel="#{var.nombreBanco}"
+										itemValue="#{var.idBanco}" />
+								</p:selectOneMenu>
+
+								<p:outputLabel value="Tipo de Cuenta" class="output-blue" />
+								<p:selectOneMenu id="tipoCuenta"
+									value="#{usuarioController.usuarioActual.tipocuenta}"
+									style="width: 100%;" styleClass="minimal-select">
+									<f:selectItem itemLabel="SELECCIONE" itemValue=""
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="AHORROS" itemValue="AHORROS" />
+									<f:selectItem itemLabel="CORRIENTE" itemValue="CORRIENTE" />
+								</p:selectOneMenu>
+
+								<p:outputLabel value="Número de Cuenta" class="output-blue" />
+								<p:inputText id="numCuenta"
+									value="#{usuarioController.usuarioActual.cuenta}" />
+
+
+
+							</h:panelGrid>
+
+							<h:panelGrid columns="2" id="gridLicencia">
+
+								<p:outputLabel value="Tiene Licencia" class="output-blue" />
+								<p:selectBooleanCheckbox id="matricula"
+									value="#{usuarioController.usuarioActual.matricula}"
+									trueLabel="Sí" falseLabel="No" />
+
+
+								<p:outputLabel value="Fecha Emisión Lic." class="output-blue" />
+								<p:datePicker id="fechaEmision" pattern="dd/MM/yyyy"
+									placeholder="yyyy-MM-dd" yearNavigator="true"
+									readonlyInput="true" yearRange="1975:2030"
+									value="#{usuarioController.usuarioActual.fechaemision}" />
+
+
+								<p:outputLabel value="Fecha Caduca Lic." class="output-blue" />
+								<p:datePicker id="fechaCaduca" pattern="dd/MM/yyyy"
+									placeholder="yyyy-MM-dd" yearNavigator="true"
+									readonlyInput="true" yearRange="1975:2030"
+									value="#{usuarioController.usuarioActual.fechacaducidad}" />
+
+
+								<p:outputLabel value="Último cambio clave" class="output-blue" />
+								<p:datePicker id="cambioClave" pattern="dd/MM/yyyy"
+									placeholder="yyyy-MM-dd" yearNavigator="true"
+									readonlyInput="true" yearRange="1975:2030"
+									value="#{usuarioController.usuarioActual.cambio}" />
+
+								<p:outputLabel value="Cargo" class="output-blue" />
+								<p:inputText id="cargo" required="true"
+									value="#{usuarioController.usuarioActual.cargo}" />
+
+								<p:outputLabel value="Estado" class="output-blue" />
+								<p:selectBooleanCheckbox id="estado"
+									value="#{usuarioController.usuarioActual.estado}"
+									trueLabel="Sí" falseLabel="No" />
+
+							</h:panelGrid>
+
+
+						</p:panelGrid>
+					</p:tab>
+
+
+					<p:tab title="Cargas Familiares">
+
+						<p:panelGrid>
+
+							<br />
+
+							<p:commandButton value="Nueva Carga Familiar"
+								actionListener="#{usuarioController.resetCargaFamiliar()}"
+								update=":popupNuevaCarga" icon="fas fa-plus" immediate="true"
+								oncomplete="PF('varNuevaCarga').show()" />
+						</p:panelGrid>
+
+						<p:panel header="Lista de Cargas Familiares">
+							<div
+								style="max-height: 300px; overflow-y: auto; background-color: #F7FDFC; padding: 10px;">
+								<p:dataTable id="tablaCargaFamiliares" var="_iteracion"
+									value="#{usuarioController.listaNomCargaFamiliares}"
+									sortBy="#{_iteracion.idNomCargaFamiliar}"
+									noDataLabel="No se han encontrado registros" rows="30"
+									rowIndexVar="it" rowKey="#{_iteracion.idNomCargaFamiliar}"
+									onrowmouseover="this.style.backgroundColor='#FFFFE0'"
+									onrowmouseout="this.style.backgroundColor='#F7FDFC'"
+									style="align:center; width:100%; background-color:#F7FDFC;"
+									paginator="true" paginatorPosition="bottom"
+									paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {Exporters}"
+									rowsPerPageTemplate="5,10,15" reflow="true">
+									<f:facet name="{Exporters}">
+										<div style="float: right; padding-top: 5px;">
+											<h:commandLink title="Exportar">
+												<h:graphicImage value="/resources/images/xlsx.png" />
+												<p:dataExporter type="xls" target="tablaCargaFamiliares"
+													fileName="graduados" />
+											</h:commandLink>
+										</div>
+									</f:facet>
+									<p:column style="width:3%">
+										<f:facet name="header">Parentesco</f:facet>
+										<h:outputText value="#{_iteracion.nomParentesco}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">Identificación</f:facet>
+										<h:outputText value=" #{_iteracion.identificacion}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">Edad / Años</f:facet>
+										<h:outputText value=" #{_iteracion.fechanacimiento}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">Apellidos</f:facet>
+										<h:outputText value="#{_iteracion.apellidos}" />
+									</p:column>
+
+									<p:column>
+										<f:facet name="header">Nombres</f:facet>
+										<h:outputText style="text-align:center"
+											value="#{_iteracion.nombres}" />
+									</p:column>
+
+									<p:column>
+										<f:facet name="header">Discapacidad</f:facet>
+										<h:outputText style="text-align:center"
+											value="#{_iteracion.discapacidad ? 'Si' : 'No'}" />
+									</p:column>
+
+									<p:column>
+										<f:facet name="header">Descripción</f:facet>
+										<h:outputText style="text-align:center"
+											value="#{_iteracion.disdescripcion}" />
+									</p:column>
+
+									<p:column>
+										<f:facet name="header">Porcentaje</f:facet>
+										<h:outputText style="text-align:center"
+											value="#{_iteracion.disporcentaje}" />
+									</p:column>
+
+									<p:column headerText="Acciones" exportable="false"
+										style="width: 15%;text-align: center;">
+										<p:commandButton id="btnEditarr" ajax="true"
+											actionListener="#{clienteController.editar}"
+											icon="pi pi-pencil" title="Editar" process="@this"
+											update=":popupEditar" oncomplete="PF('varEditar').show()">
+											<f:attribute name="itemEditar" value="#{_iteracion}" />
+										</p:commandButton>
+
+										<p:commandButton value="Eliminar" icon="pi pi-trash"
+											action="#{usuarioController.eliminarFamiliar(_iteracion)}"
+											immediate="true" update="tablaCargaFamiliares" />
+
+									</p:column>
+								</p:dataTable>
+							</div>
+
+						</p:panel>
+
+
+
+					</p:tab>
+
+				</p:tabView>
+
+
+				<h:panelGroup id="gridGuardar">
+
+
+
+					<p:commandButton action="#{usuarioController.guardar()}"
+						value="Guardar" ajax="true"
+						update=" :frmPrincipal:tablaUsuarios,:frmPrincipal:growl "
+						oncomplete="if (args &amp;&amp; !args.validationFailed) PF('varNuevo').hide()" />
+
+				</h:panelGroup>
+
+
+			</h:form>
+		</p:dialog>
+
+
+
+		<p:dialog widgetVar="varNuevaCarga" id="popupNuevaCarga"
+			styleClass="dialogo-carga" resizable="false" style="width: auto;">
+
+			<f:facet name="header">Formulario Agregar Cargas Familiares()</f:facet>
+
+			<h:form id="formCarga">
+
+
+
+
+				<p:panelGrid columns="2" class="right-panell" id="gridFamiliares"
+					styleClass="gridFamiliares" style="width: 100%;margin-top: 10px;">
+
+					<h:panelGrid columns="2">
+
+						<p:outputLabel for="tipoDocumentoParentesco"
+							value="Tipo Documento" class="output-blue" />
+						<p:selectOneMenu id="tipoDocumentoParentesco" autoWidth="false"
+							style="" styleClass="minimal-select" required="true"
+							requiredMessage="tipo documento obligatorio"
+							value="#{usuarioController.nomCargaFamiliar.tipoid}">
+							<f:selectItem itemLabel="SELECCIONE" itemValue=""
+								noSelectionOption="true" />
+							<f:selectItem itemLabel="CEDULA" itemValue="C" />
+							<f:selectItem itemLabel="RUC" itemValue="R" />
+							<f:selectItem itemLabel="PASAPORTE" itemValue="P" />
+						</p:selectOneMenu>
+
+						<p:outputLabel for="ident" value="Identificacion"
+							class="output-blue" />
+
+						<p:inputText id="ident" required="true"
+							requiredMessage="campo obligatorio"
+							value="#{usuarioController.nomCargaFamiliar.identificacion}"
+							style="width:100%;" />
+
+						<p:outputLabel for="nom" value="Nombres" style="width:100%;"
+							class="output-blue" />
+						<p:inputText id="nom" required="true"
+							requiredMessage="nonbres obligatorio"
+							value="#{usuarioController.nomCargaFamiliar.nombres}"
+							style="width:100%;" />
+
+						<p:outputLabel for="ape" value="Apellidos" class="output-blue" />
+						<p:inputText id="ape" required="true"
+							requiredMessage="apellidos obligatorio"
+							value="#{usuarioController.nomCargaFamiliar.apellidos}"
+							style="width:100%;" />
+
+						<p:outputLabel for="fechaNacimiento" value="Fecha Nacimiento:"
+							class="output-blue" />
+						<p:datePicker id="fechaNacimiento" pattern="dd/MM/yyyy"
+							required="true" requiredMessage="fecha de nacimiento obligatorio"
+							yearNavigator="true" readonlyInput="true" yearRange="1975:2030"
+							value="#{usuarioController.nomCargaFamiliar.fechanacimiento}" />
+
+						<p:outputLabel for="dir" value="Dirección" class="output-blue" />
+						<p:inputTextarea id="dir"
+							value="#{usuarioController.nomCargaFamiliar.direccion}"
+							autoResize="false" rows="3" cols="30" required="true"
+							style="width: 100%; resize: vertical; height: 35px; max-height: 200px; overflow: auto;"
+							requiredMessage="dirección obligatorio" />
+
+
+
+
+					</h:panelGrid>
+
+					<h:panelGrid columns="2">
+
+						<p:outputLabel for="parentesco" value="Parentesco:"
+							class="output-blue" />
+						<p:selectOneMenu id="parentesco" autoWidth="false"
+							style="width:100%;" styleClass="minimal-select" required="true"
+							requiredMessage="parentesco obligatorio"
+							value="#{usuarioController.nomCargaFamiliar.nomParentesco}">
+							<f:selectItem itemLabel="SELECCIONE" itemValue=""
+								noSelectionOption="true" />
+							<f:selectItem itemLabel="HIJO/A" itemValue="HIJO/A" />
+							<f:selectItem itemLabel="ESPOSO/A" itemValue="ESPOSO/A" />
+							<f:selectItem itemLabel="UNIÓN DE HECHO"
+								itemValue="UNIÓN DE HECHO" />
+							<f:selectItem itemLabel="EX PAREJA" itemValue="EX PAREJA" />
+						</p:selectOneMenu>
+
+						<p:outputLabel for="discapacidadd" value="Discapacidad ?"
+							class="output-blue" />
+						<p:selectBooleanCheckbox id="discapacidadd"
+							value="#{usuarioController.nomCargaFamiliar.discapacidad}"
+							trueLabel="Sí" falseLabel="No" />
+
+
+						<p:outputLabel for="porcentajee" value="% Discapacidad"
+							class="output-blue" />
+						<p:inputText id="porcentajee"
+							value="#{usuarioController.nomCargaFamiliar.disporcentaje}"
+							style="width:100%;" />
+
+						<p:outputLabel for="description" value="Descripción"
+							class="output-blue" />
+						<p:inputTextarea id="description"
+							value="#{usuarioController.nomCargaFamiliar.disdescripcion}"
+							autoResize="false" rows="3" cols="30"
+							style="width: 100%;resize: vertical; height: 30px; max-height: 200px; overflow: auto;" />
+
+						<p:outputLabel for="estadoFamiliar" value="Estado"
+							class="output-blue" />
+						<p:selectBooleanCheckbox id="estadoFamiliar"
+							value="#{usuarioController.nomCargaFamiliar.estado}"
+							trueLabel="Sí" falseLabel="No" />
+
+
+					</h:panelGrid>
+
+
+
+
+				</p:panelGrid>
+
+
+				<p:commandButton value="Carga Familiar" ajax="true"
+					action="#{usuarioController.agregarFamiliar()}"
+					update=":formNuevo:tabViewNuevo:tablaCargaFamiliares , :formularioEditar:tabViewEdit:tablaCarga :frmPrincipal:growl"
+					oncomplete="if (args &amp;&amp; !args.validationFailed) PF('varNuevaCarga').hide()" />
+
+			</h:form>
+
+		</p:dialog>
+
+
+		<!-- de aqui abajo es toda la seccion de editar -->
+
+		<!-- este dialog es el de editar al usuario o empleado -->
+
+		<p:dialog id="popupEditar" modal="true" widgetVar="varEditar"
+			resizable="false" style="width: auto;">
+			<f:facet name="header">
+				        Editar Empleado (#{usuarioController.usuarioActual.nombres} #{usuarioController.usuarioActual.apellidos})
+			        </f:facet>
+
+			<h:form id="formularioEditar">
+
+				<p:tabView id="tabViewEdit">
+
+					<p:tab title="Datos Personales">
+
+						<p:panelGrid columns="6" style="width: 100%;"
+							id="gridDatosPersonales">
+
+							<p:outputLabel for="tipoDocumento" value="Tipo"
+								class="output-blue" />
+							<p:selectOneMenu id="tipoDocumento" autoWidth="false"
+								style="width:100%;" styleClass="minimal-select"
+								requiredMessage="Tipo docuemento requerido" required="true"
+								value="#{usuarioController.usuarioActual.tipoidentificacion}">
+								<f:selectItem itemLabel="SELECCIONE" itemValue=""
+									noSelectionOption="true" />
+								<f:selectItem itemLabel="CEDULA" itemValue="C" />
+								<f:selectItem itemLabel="RUC" itemValue="R" />
+								<f:selectItem itemLabel="PASAPORTE" itemValue="P" />
+							</p:selectOneMenu>
+
+							<p:outputLabel for="telefono" value="Teléfono"
+								class="output-blue" />
+							<p:inputMask id="telefono" maxlength="10" style="width:100%;"
+								requiredMessage="Campo Requerido" mask="(99) 9999-999"
+								value="#{usuarioController.usuarioActual.telefono}" />
+
+							<p:outputLabel for="estadoCivil" value="Estado Civil"
+								class="output-blue" />
+							<p:selectOneMenu id="estadoCivil" autoWidth="false"
+								style="width:100%;" styleClass="minimal-select"
+								requiredMessage="Estado civil requerido" required="true"
+								value="#{usuarioController.usuarioActual.estadocivil}">
+								<f:selectItem itemLabel="SELECCIONE" itemValue=""
+									noSelectionOption="true" />
+								<f:selectItem itemLabel="SOLTERO/A" itemValue="SOLTERO/A" />
+								<f:selectItem itemLabel="CASADO/A" itemValue="CASADO/A" />
+								<f:selectItem itemLabel="DIVORCIADO/A" itemValue="DIVORCIADO/A" />
+								<f:selectItem itemLabel="VIUDO/A" itemValue="VIUDO/A" />
+								<f:selectItem itemLabel="UNIÓN DE HECHO"
+									itemValue="UNIÓN DE HECHO" />
+							</p:selectOneMenu>
+
+							<h:outputLabel for="identificacion" value="Identificacion"
+								class="output-blue" />
+							<p:inputText id="identificacion" required="true"
+								requiredMessage="Identificación requerido"
+								value="#{usuarioController.usuarioActual.identificacion}"
+								style="width:100%;" />
+
+							<p:outputLabel for="mail" value="Email" class="output-blue" />
+							<p:inputText id="mail" style="width:100%;" required="true"
+								requiredMessage="Correo requerido"
+								validatorMessage="Correo electrónico no válido"
+								value="#{usuarioController.usuarioActual.email}">
+								<f:validateRegex for="mailEmp"
+									pattern="[\w\.-]*[a-zA-Z0-9_]@[\w\.-]*[a-zA-Z0-9]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]" />
+
+							</p:inputText>
+
+							<p:outputLabel for="discapacidad" value="Discapacidad ?"
+								class="output-blue" />
+							<p:selectBooleanCheckbox id="discapacidad"
+								value="#{usuarioController.usuarioActual.discapacidad}"
+								trueLabel="Sí" falseLabel="No" />
+
+							<p:outputLabel for="nombre" value="Nombres" class="output-blue" />
+							<p:inputText id="nombre" required="true"
+								requiredMessage="Nombre requerido"
+								value="#{usuarioController.usuarioActual.nombres}"
+								style="width:100%;" />
+
+							<p:outputLabel for="telEmp" value="Movil" class="output-blue" />
+							<p:inputMask id="telEmp" mask="9999999999" maxlength="10"
+								style="width:100%;"
+								value="#{usuarioController.usuarioActual.movil}" />
+
+							<p:outputLabel for="descripcion" value="Descripción"
+								class="output-blue" />
+							<p:inputTextarea id="descripcion"
+								value="#{usuarioController.usuarioActual.disdescripcion}"
+								autoResize="false" rows="3" cols="30"
+								style="width: 100%;resize: vertical; height: 30px; max-height: 30px; overflow: auto;" />
+
+
+							<p:outputLabel for="apellidos" value="Apellidos"
+								class="output-blue" />
+							<p:inputText id="apellidos" required="true"
+								requiredMessage="Apellido requerido"
+								value="#{usuarioController.usuarioActual.apellidos}"
+								style="width:100%;" />
+
+							<p:outputLabel for="direccion" value="Dirección"
+								class="output-blue" />
+							<p:inputTextarea id="direccion"
+								value="#{usuarioController.usuarioActual.direccion}"
+								required="true" autoResize="false" rows="3" cols="30"
+								style="width: 100%;resize: vertical; height: 30px; max-height: 30px; overflow: auto;"
+								requiredMessage="dirección obligatorio" />
+
+							<p:outputLabel for="porcentaje" value="% Discapacidad"
+								class="output-blue" />
+							<p:inputText id="porcentaje"
+								value="#{usuarioController.usuarioActual.disporcentaje}"
+								style="width:100%;" />
+
+							<p:outputLabel for="fechaNac" value="Fecha Nacimiento:"
+								class="output-blue" />
+							<p:datePicker id="fechaNac" locale="es" monthNavigator="true"
+								pattern="dd/MM/yyyy" style="width:100% !important;"
+								requiredMessage="Fecha de Nacimiento requerido" required="true"
+								yearNavigator="true" readonlyInput="true" yearRange="1975:2030"
+								value="#{usuarioController.usuarioActual.nacimiento}"
+								maxdate="#{graduadoPerfilController.maxDateNac}" />
+						</p:panelGrid>
+
+					</p:tab>
+
+					<p:tab title="Datos de la Cuenta">
+
+						<p:panelGrid columns="2" style="width: 100%;" id="gridCuentas"
+							columnClasses="label,value,label,value">
+
+							<h:panelGrid columns="2" id="gridBanco">
+
+								<p:outputLabel value="Es de planta:" class="output-blue" />
+								<p:selectOneMenu id="pantalla" autoWidth="false"
+									style="width:100%;" styleClass="minimal-select"
+									requiredMessage="Campo Requerido" required="true"
+									value="#{usuarioController.usuarioActual.pantalla}">
+									<f:selectItem itemLabel="SELECCIONE" itemValue=""
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Interna" itemValue="Interna" />
+									<f:selectItem itemLabel="Externa" itemValue="Externa" />
+								</p:selectOneMenu>
+
+								<p:outputLabel value="Departamento" class="output-blue" />
+								<p:selectOneMenu id="departamento" autoWidth="false"
+									style="width:100%;" required="true"
+									requiredMessage="Campo Requerido" styleClass="minimal-select"
+									converter="omnifaces.SelectItemsConverter"
+									value="#{usuarioController.usuarioActual.departamento.idDepartamento}">
+									<f:selectItem itemLabel="SELECCIONE" itemValue=""
+										noSelectionOption="true" />
+									<f:selectItems value="#{usuarioController.listaDepartamento}"
+										var="var" itemLabel="#{var.nombreDepartamento}"
+										itemValue="#{var.idDepartamento}" />
+								</p:selectOneMenu>
+
+								<p:outputLabel value="Banco" class="output-blue" />
+								<p:selectOneMenu id="banco" autoWidth="false"
+									style="width:100%;" requiredMessage="Campo Requerido"
+									styleClass="minimal-select"
+									converter="omnifaces.SelectItemsConverter"
+									value="#{usuarioController.usuarioActual.banco.idBanco}">
+									<f:selectItem itemLabel="SELECCIONE" itemValue=""
+										noSelectionOption="true" />
+									<f:selectItems value="#{usuarioController.listaBanco}"
+										var="var" itemLabel="#{var.nombreBanco}"
+										itemValue="#{var.idBanco}" />
+								</p:selectOneMenu>
+
+								<p:outputLabel value="Tipo de Cuenta" class="output-blue" />
+								<p:selectOneMenu id="tipoCuenta"
+									value="#{usuarioController.usuarioActual.tipocuenta}"
+									style="width: 100%;" styleClass="minimal-select">
+									<f:selectItem itemLabel="SELECCIONE" itemValue=""
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="AHORROS" itemValue="AHORROS" />
+									<f:selectItem itemLabel="CORRIENTE" itemValue="CORRIENTE" />
+								</p:selectOneMenu>
+
+								<p:outputLabel value="Número de Cuenta" class="output-blue" />
+								<p:inputText id="numCuenta"
+									value="#{usuarioController.usuarioActual.cuenta}" />
+
+							</h:panelGrid>
+
+							<h:panelGrid columns="2" id="gridLicencia">
+
+								<p:outputLabel value="Tiene Licencia" class="output-blue" />
+								<p:selectBooleanCheckbox id="matricula"
+									value="#{usuarioController.usuarioActual.matricula}"
+									trueLabel="Sí" falseLabel="No" />
+
+								<p:outputLabel value="Fecha Emisión Lic." class="output-blue" />
+								<p:datePicker id="fechaEmision" pattern="dd/MM/yyyy"
+									placeholder="yyyy-MM-dd" yearNavigator="true"
+									readonlyInput="true" yearRange="1975:2030"
+									value="#{usuarioController.usuarioActual.fechaemision}" />
+
+								<p:outputLabel value="Fecha Caduca Lic." class="output-blue" />
+								<p:datePicker id="fechaCaduca" pattern="dd/MM/yyyy"
+									placeholder="yyyy-MM-dd" yearNavigator="true"
+									readonlyInput="true" yearRange="1975:2030"
+									value="#{usuarioController.usuarioActual.fechacaducidad}" />
+
+								<p:outputLabel value="Último cambio clave" class="output-blue" />
+								<p:datePicker id="cambioClave" pattern="dd/MM/yyyy"
+									placeholder="yyyy-MM-dd" yearNavigator="true"
+									readonlyInput="true" yearRange="1975:2030"
+									value="#{usuarioController.usuarioActual.cambio}" />
+
+								<p:outputLabel value="Cargo" class="output-blue" />
+								<p:inputText id="cargo" required="true"
+									value="#{usuarioController.usuarioActual.cargo}" />
+
+								<p:outputLabel value="Estado" class="output-blue" />
+								<p:selectBooleanCheckbox id="estado"
+									value="#{usuarioController.usuarioActual.estado}"
+									trueLabel="Sí" falseLabel="No" />
+
+							</h:panelGrid>
+
+						</p:panelGrid>
+					</p:tab>
+
+					<p:tab title="Cargas Familiares">
+
+						<p:panelGrid>
+							<br />
+							<p:commandButton value="Nuevo Familiar"
+								actionListener="#{usuarioController.resetCargaFamiliar()}"
+								icon="fas fa-plus" immediate="true"
+								oncomplete="PF('varNuevoFamiliar').show()" />
+						</p:panelGrid>
+
+						<p:panel header="Cargas Familiares">
+							<div
+								style="max-height: 300px; overflow-y: auto; background-color: #F7FDFC; padding: 10px;">
+								<p:dataTable id="tablaCarga" var="_iteracion"
+									value="#{usuarioController.listaNomCargaFamiliares}"
+									sortBy="#{_iteracion.idNomCargaFamiliar}"
+									noDataLabel="No se han encontrado registros" rows="30"
+									rowIndexVar="it" rowKey="#{_iteracion.idNomCargaFamiliar}"
+									onrowmouseover="this.style.backgroundColor='#FFFFE0'"
+									onrowmouseout="this.style.backgroundColor='#F7FDFC'"
+									style="align:center; width:100%; background-color:#F7FDFC;"
+									paginator="true" paginatorPosition="bottom"
+									paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {Exporters}"
+									rowsPerPageTemplate="5,10,15" reflow="true">
+									<f:facet name="{Exporters}">
+										<div style="float: right; padding-top: 5px;">
+											<h:commandLink title="Exportar">
+												<h:graphicImage value="/resources/images/xlsx.png" />
+												<p:dataExporter type="xls" target="tablaCargaFamiliares"
+													fileName="graduados" />
+											</h:commandLink>
+										</div>
+									</f:facet>
+
+
+									<p:column style="width:5%">
+										<f:facet name="header">Parentesco</f:facet>
+										<h:outputText value="#{_iteracion.nomParentesco}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">Identificación</f:facet>
+										<h:outputText value=" #{_iteracion.identificacion}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">Edad / Años</f:facet>
+										<h:outputText value=" #{_iteracion.fechanacimiento}" />
+									</p:column>
+
+									<p:column>
+										<f:facet name="header">Nombres</f:facet>
+										<h:outputText style="text-align:center"
+											value="#{_iteracion.nombres}" />
+									</p:column>
+
+									<p:column>
+										<f:facet name="header">Apellidos</f:facet>
+										<h:outputText value="#{_iteracion.apellidos}" />
+									</p:column>
+
+									<p:column style="width: 6%;">
+										<f:facet name="header">Discapacidad</f:facet>
+										<h:outputText style="text-align:center"
+											value="#{_iteracion.discapacidad ? 'Si' : 'No'}" />
+									</p:column>
+
+									<p:column>
+										<f:facet name="header">Descripción</f:facet>
+										<h:outputText style="text-align:center"
+											value="#{_iteracion.disdescripcion}" />
+									</p:column>
+
+									<p:column style="width: 5%;">
+										<f:facet name="header">Porcentaje</f:facet>
+										<h:outputText style="text-align:center"
+											value="#{_iteracion.disporcentaje}" />
+									</p:column>
+
+									<p:column style="width: 8%;">
+										<f:facet name="header">Estado</f:facet>
+										<h:outputText
+											value="#{_iteracion.estado ? 'Activo' : 'Inactivo'}"
+											style="#{_iteracion.estado ? 
+            'background-color: #28a745; color: white; padding: 4px; border-radius: 3px; text-align: center; display: block;' : 
+            'background-color: #6c757d; color: white; padding: 4px; border-radius: 3px; text-align: center; display: block;'}" />
+									</p:column>
+
+									<p:column headerText="Acciones" exportable="false"
+										style="width: auto;text-align: center;">
+
+										<p:commandButton id="btnEditarr" ajax="true"
+											actionListener="#{usuarioController.editarCarga}"
+											icon="pi pi-pencil" title="Editar" process="@this"
+											update=":popupEditarCarga"
+											oncomplete="PF('varEditarCarga').show()">
+											<f:attribute name="itemEditar" value="#{_iteracion}" />
+										</p:commandButton>
+
+										<!-- <p:commandButton icon="pi pi-trash"
+												actionListener="#{usuarioController.eliminarFamiliar(_iteracion)}"
+												immediate="true" update="tablaCarga">
+												<p:confirm header="Confirmar eliminación"
+													message="¿Está seguro de eliminar"
+													icon="pi pi-exclamation-triangle" />
+
+											</p:commandButton>-->
+
+									</p:column>
+								</p:dataTable>
+
+								<p:confirmDialog global="true" showEffect="fade"
+									hideEffect="fade" responsive="true">
+									<p:commandButton value="Sí" type="button"
+										styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+									<p:commandButton value="No" type="button"
+										styleClass="ui-confirmdialog-no" icon="pi pi-times" />
+								</p:confirmDialog>
+							</div>
+
+						</p:panel>
+
+					</p:tab>
+
+				</p:tabView>
+
+				<h:panelGroup id="gridGuardar">
+
+					<p:commandButton action="#{usuarioController.actualizar()}"
+						value="Guardar Cambios" ajax="true"
+						update=" :frmPrincipal:tablaUsuarios :dialogResultado "
+						oncomplete="PF('dialogResultado').show()" />
+
+				</h:panelGroup>
+
+			</h:form>
+
+		</p:dialog>
+
+
+		<!-- formulario que se desplega para editar las cargas familiares -->
+
+		<p:dialog widgetVar="varEditarCarga" id="popupEditarCarga"
+			styleClass="dialogo-carga" resizable="true" style="width: auto;">
+
+			<f:facet name="header">Editar Carga Familiar</f:facet>
+
+			<h:form id="formCargaEditar">
+
+				<p:outputLabel style="color: #000; font-weight: bold !important;"
+					for="cargaFamiliar" value="Editar cargas familiares ?"
+					class="output-blue" />
+
+				<p:selectBooleanCheckbox id="cargaFamiliar" trueLabel="Sí"
+					style="margin-left: 20px;" falseLabel="No"
+					value="#{usuarioController.cargaFamiliar}">
+					<p:ajax event="change" update="gridFamiliares" />
+				</p:selectBooleanCheckbox>
+
+
+				<p:panelGrid columns="2" class="right-panell" id="gridFamiliares"
+					styleClass="gridFamiliares" style="width: 100%;margin-top: 10px;">
+
+					<h:panelGrid columns="2">
+
+						<p:outputLabel for="tipoDocumentoParentesco"
+							value="Tipo Documento" class="output-blue" />
+						<p:selectOneMenu id="tipoDocumentoParentesco" autoWidth="false"
+							style="" styleClass="minimal-select" required="true"
+							requiredMessage="tipo documento obligatorio"
+							value="#{usuarioController.nomCargaFamiliar.tipoid}"
+							disabled="#{not usuarioController.cargaFamiliar}">
+							<f:selectItem itemLabel="SELECCIONE" itemValue=""
+								noSelectionOption="true" />
+							<f:selectItem itemLabel="CEDULA" itemValue="C" />
+							<f:selectItem itemLabel="RUC" itemValue="R" />
+							<f:selectItem itemLabel="PASAPORTE" itemValue="P" />
+						</p:selectOneMenu>
+
+						<p:outputLabel for="ident" value="Identificacion"
+							class="output-blue" />
+
+						<p:inputText id="ident" required="true"
+							requiredMessage="campo obligatorio"
+							value="#{usuarioController.nomCargaFamiliar.identificacion}"
+							style="width:100%;"
+							disabled="#{not usuarioController.cargaFamiliar}" />
+
+						<p:outputLabel for="nom" value="Nombres" style="width:100%;"
+							class="output-blue" />
+						<p:inputText id="nom" required="true"
+							requiredMessage="nonbres obligatorio"
+							value="#{usuarioController.nomCargaFamiliar.nombres}"
+							style="width:100%;"
+							disabled="#{not usuarioController.cargaFamiliar}" />
+
+						<p:outputLabel for="ape" value="Apellidos" class="output-blue" />
+						<p:inputText id="ape" required="true"
+							requiredMessage="apellidos obligatorio"
+							value="#{usuarioController.nomCargaFamiliar.apellidos}"
+							style="width:100%;"
+							disabled="#{not usuarioController.cargaFamiliar}" />
+
+						<p:outputLabel for="fechaNacimiento" value="Fecha Nacimiento:"
+							class="output-blue" />
+						<p:datePicker id="fechaNacimiento" pattern="dd/MM/yyyy"
+							required="true" requiredMessage="fecha de nacimiento obligatorio"
+							yearNavigator="true" readonlyInput="true" yearRange="1975:2030"
+							value="#{usuarioController.nomCargaFamiliar.fechanacimiento}"
+							disabled="#{not usuarioController.cargaFamiliar}" />
+
+						<p:outputLabel for="dir" value="Dirección" class="output-blue" />
+						<p:inputTextarea id="dir"
+							value="#{usuarioController.nomCargaFamiliar.direccion}"
+							autoResize="false" rows="3" cols="30" required="true"
+							style="width: 100%; resize: vertical; height: 35px; max-height: 200px; overflow: auto;"
+							requiredMessage="dirección obligatorio"
+							disabled="#{not usuarioController.cargaFamiliar}" />
+
+
+					</h:panelGrid>
+
+					<h:panelGrid columns="2">
+
+						<p:outputLabel for="parentesco" value="Parentesco:"
+							class="output-blue" />
+						<p:selectOneMenu id="parentesco" autoWidth="false"
+							style="width:100%;" styleClass="minimal-select" required="true"
+							requiredMessage="parentesco obligatorio"
+							value="#{usuarioController.nomCargaFamiliar.nomParentesco}"
+							disabled="#{not usuarioController.cargaFamiliar}">
+							<f:selectItem itemLabel="SELECCIONE" itemValue=""
+								noSelectionOption="true" />
+							<f:selectItem itemLabel="HIJO/A" itemValue="HIJO/A" />
+							<f:selectItem itemLabel="ESPOSO/A" itemValue="ESPOSO/A" />
+							<f:selectItem itemLabel="UNIÓN DE HECHO"
+								itemValue="UNIÓN DE HECHO" />
+							<f:selectItem itemLabel="EX PAREJA" itemValue="EX PAREJA" />
+						</p:selectOneMenu>
+
+						<p:outputLabel for="discapacidadd" value="Discapacidad ?"
+							class="output-blue" />
+						<p:selectBooleanCheckbox id="discapacidadd"
+							value="#{usuarioController.nomCargaFamiliar.discapacidad}"
+							trueLabel="Sí" falseLabel="No"
+							disabled="#{not usuarioController.cargaFamiliar}" />
+
+
+						<p:outputLabel for="porcentajee" value="% Discapacidad"
+							class="output-blue" />
+						<p:inputText id="porcentajee"
+							value="#{usuarioController.nomCargaFamiliar.disporcentaje}"
+							style="width:100%;"
+							disabled="#{not usuarioController.cargaFamiliar}" />
+
+						<p:outputLabel for="description" value="Descripción"
+							class="output-blue" />
+						<p:inputTextarea id="description"
+							value="#{usuarioController.nomCargaFamiliar.disdescripcion}"
+							autoResize="false" rows="3" cols="30"
+							style="width: 100%; resize: vertical; height: 35px; max-height: 200px; overflow: auto;"
+							disabled="#{not usuarioController.cargaFamiliar}" />
+
+						<p:outputLabel for="estadoFamiliar" value="Estado"
+							class="output-blue" />
+						<p:selectBooleanCheckbox id="estadoFamiliar"
+							value="#{usuarioController.nomCargaFamiliar.estado}"
+							trueLabel="Sí" falseLabel="No" />
+
+
+					</h:panelGrid>
+
+				</p:panelGrid>
+
+				<br />
+				<p:commandButton value="EDITAR" ajax="true"
+					action="#{usuarioController.actualizarCargaFamiliar}"
+					update=":formularioEditar:tabViewEdit:tablaCarga :dialogResultado"
+					oncomplete="PF('dialogResultado').show()" />
+
+			</h:form>
+
+		</p:dialog>
+
+		<!-- formulario para agregar familiar directo a la base de datos en la parte de editar -->
+
+
+		<p:dialog widgetVar="varNuevoFamiliar" id="popupNuevoFamiliar"
+			styleClass="dialogo-carga" resizable="false" style="width: auto;">
+
+			<f:facet name="header">Agregar Familiar</f:facet>
+
+			<h:form id="formFamiliar">
+
+				<p:panelGrid columns="2" class="right-panell" id="gridFamiliares"
+					styleClass="gridFamiliares" style="width: 100%;margin-top: 10px;">
+
+
+					<h:panelGrid columns="2">
+
+						<p:outputLabel for="tipoDocumentoParentesco"
+							value="Tipo Documento" class="output-blue" />
+						<p:selectOneMenu id="tipoDocumentoParentesco" autoWidth="false"
+							style="" styleClass="minimal-select" required="true"
+							requiredMessage="tipo documento obligatorio"
+							value="#{usuarioController.nomCargaFamiliar.tipoid}">
+							<f:selectItem itemLabel="SELECCIONE" itemValue=""
+								noSelectionOption="true" />
+							<f:selectItem itemLabel="CEDULA" itemValue="C" />
+							<f:selectItem itemLabel="RUC" itemValue="R" />
+							<f:selectItem itemLabel="PASAPORTE" itemValue="P" />
+						</p:selectOneMenu>
+
+						<p:outputLabel for="ident" value="Identificacion"
+							class="output-blue" />
+
+						<p:inputText id="ident" required="true"
+							requiredMessage="campo obligatorio"
+							value="#{usuarioController.nomCargaFamiliar.identificacion}"
+							style="width:100%;" />
+
+						<p:outputLabel for="nom" value="Nombres" style="width:100%;"
+							class="output-blue" />
+						<p:inputText id="nom" required="true"
+							requiredMessage="nonbres obligatorio"
+							value="#{usuarioController.nomCargaFamiliar.nombres}"
+							style="width:100%;" />
+
+						<p:outputLabel for="ape" value="Apellidos" class="output-blue" />
+						<p:inputText id="ape" required="true"
+							requiredMessage="apellidos obligatorio"
+							value="#{usuarioController.nomCargaFamiliar.apellidos}"
+							style="width:100%;" />
+
+						<p:outputLabel for="fechaNacimiento" value="Fecha Nacimiento:"
+							class="output-blue" />
+						<p:datePicker id="fechaNacimiento" pattern="dd/MM/yyyy"
+							required="true" requiredMessage="fecha de nacimiento obligatorio"
+							yearNavigator="true" readonlyInput="true" yearRange="1975:2030"
+							value="#{usuarioController.nomCargaFamiliar.fechanacimiento}" />
+
+						<p:outputLabel for="dir" value="Dirección" class="output-blue" />
+						<p:inputTextarea id="dir"
+							value="#{usuarioController.nomCargaFamiliar.direccion}"
+							autoResize="false" rows="3" cols="30" required="true"
+							style="width: 100%; resize: vertical; height: 35px; max-height: 200px; overflow: auto;"
+							requiredMessage="dirección obligatorio" />
+
+					</h:panelGrid>
+
+					<h:panelGrid columns="2">
+
+						<p:outputLabel for="parentesco" value="Parentesco:"
+							class="output-blue" />
+						<p:selectOneMenu id="parentesco" autoWidth="false"
+							style="width:100%;" styleClass="minimal-select" required="true"
+							requiredMessage="parentesco obligatorio"
+							value="#{usuarioController.nomCargaFamiliar.nomParentesco}">
+							<f:selectItem itemLabel="SELECCIONE" itemValue=""
+								noSelectionOption="true" />
+							<f:selectItem itemLabel="HIJO/A" itemValue="HIJO/A" />
+							<f:selectItem itemLabel="ESPOSO/A" itemValue="ESPOSO/A" />
+							<f:selectItem itemLabel="UNIÓN DE HECHO"
+								itemValue="UNIÓN DE HECHO" />
+							<f:selectItem itemLabel="EX PAREJA" itemValue="EX PAREJA" />
+						</p:selectOneMenu>
+
+						<p:outputLabel for="discapacidadd" value="Discapacidad ?"
+							class="output-blue" />
+						<p:selectBooleanCheckbox id="discapacidadd"
+							value="#{usuarioController.nomCargaFamiliar.discapacidad}"
+							trueLabel="Sí" falseLabel="No" />
+
+
+						<p:outputLabel for="porcentajee" value="% Discapacidad"
+							class="output-blue" />
+						<p:inputText id="porcentajee"
+							value="#{usuarioController.nomCargaFamiliar.disporcentaje}"
+							style="width:100%;" />
+
+						<p:outputLabel for="description" value="Descripción"
+							class="output-blue" />
+						<p:inputTextarea id="description"
+							value="#{usuarioController.nomCargaFamiliar.disdescripcion}"
+							autoResize="false" rows="3" cols="30"
+							style="width: 100%; resize: vertical; height: 35px; max-height: 200px; overflow: auto;" />
+
+						<p:outputLabel for="estadoFamiliar" value="Estado"
+							class="output-blue" />
+						<p:selectBooleanCheckbox id="estadoFamiliar"
+							value="#{usuarioController.nomCargaFamiliar.estado}"
+							trueLabel="Sí" falseLabel="No" />
+
+
+					</h:panelGrid>
+
+				</p:panelGrid>
+
+				<p:commandButton value="Cargar Familiar" ajax="true"
+					action="#{usuarioController.guardarFamiliar()}"
+					update=":formularioEditar:tabViewEdit:tablaCarga :frmPrincipal:growl"
+					oncomplete="if (args &amp;&amp; !args.validationFailed)PF('dialogResultado').show()" />
+
+			</h:form>
+
+		</p:dialog>
+
+
+
+
+
+		<p:dialog id="dialogResultado" widgetVar="dialogResultado" width="400"
+			height="100" header="Resultado" modal="true" closable="true"
+			resizable="false" draggable="false" onShow="cerrarDialogoConTiempo()"
+			styleClass="custom-dialog"
+			contentStyle="text-align: center; font-family: Arial, sans-serif; font-size: 16px;">
+			<h:form id="frmMensaje">
+				<!-- PanelGrid con 2 columnas (imagen y mensaje) -->
+				<h:panelGrid columns="2" styleClass="dialog-content"
+					columnClasses="left-column, right-column">
+					<!-- Imagen de Información o Error según el tipo de mensaje -->
+					<h:graphicImage library="images"
+						name="#{usuarioController.mensajes.tipoMensaje == 'success' ? 'success.png' : 'error.png'}"
+						alt="Info o Error"
+						style="width: 40px; height: 40px; margin-right: 10px;" />
+
+					<!-- Mensaje -->
+					<h:outputText value="#{usuarioController.mensajes.mensaje}"
+						styleClass="dialog-message" />
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+
+
+
+
+
+
+
+
+	</ui:define>
+
+</ui:composition>
